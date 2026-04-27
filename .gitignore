@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+test-results/
+playwright-report/
+blob-report/
+allure-results/
+allure-report/
+playwright/.cache/
+.playwright-mcp/
+coverage/
+.nyc_output/
+*.log
+.DS_Store
+*.pem

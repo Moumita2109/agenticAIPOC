@@ -30,12 +30,13 @@ src/
   agent/
     login/
       loginAgent.ts   # Login agent loop (MCP stdio + finish)
+    plan/             # plan.md: fenced JSON or LLM scenario extraction
     llm.ts            # LLM integration
     mcp/              # Cursor mcp.json + Playwright MCP stdio session
     tools/
       finishTool.ts   # Local finish tool for agents
   tests/
-    agentic.spec.ts   # Login agent tests
+    agentic.spec.ts   # Plan-driven login agent tests
   utils/
     logger.ts
     state.ts
@@ -226,6 +227,40 @@ npm run agent:test
 ```
 
 executes a natural language test using the agentic flow.
+
+---
+
+## Executable scenarios (source of truth for automated runs)
+
+The Playwright suite (`src/tests/agentic.spec.ts`) loads **`plan.md`** (override path with env `PLAN_MD_PATH`).
+
+1. **Optional JSON fence:** If a fenced `plan-scenarios` JSON block is present and valid (see below), scenarios are read from it directly (fast, deterministic).
+2. **Otherwise:** An LLM extracts structured scenarios from the **entire** Markdown document (objectives, MVP, example flows).
+
+Each scenario has a **goal**, optional **extraContext**, and a **credentials** mode:
+
+| credentials    | Env vars used |
+|----------------|----------------|
+| `valid_login`  | `LOGIN_USERNAME`, `LOGIN_PASSWORD` |
+| `invalid_login`| `INVALID_LOGIN_USERNAME`, `INVALID_LOGIN_PASSWORD`, optional `INVALID_LOGIN_EXPECTED_TEXT` |
+| `none`         | No login secrets |
+
+```plan-scenarios
+{
+  "scenarios": [
+    {
+      "title": "valid login reaches secure area",
+      "goal": "Log in with valid credentials and confirm the post-login secure area or success state is visible.",
+      "credentials": "valid_login"
+    },
+    {
+      "title": "invalid login shows error",
+      "goal": "Attempt login with credentials that must fail and verify a visible error message.",
+      "credentials": "invalid_login"
+    }
+  ]
+}
+```
 
 ---
 
